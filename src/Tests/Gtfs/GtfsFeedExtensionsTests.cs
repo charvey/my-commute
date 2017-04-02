@@ -1,6 +1,7 @@
 ﻿using Core.Gtfs;
 using Data.Feeds;
 using System;
+using System.Linq;
 using Xunit;
 
 namespace Tests.Gtfs
@@ -16,9 +17,9 @@ namespace Tests.Gtfs
         {
             var feed = Feeds.Get(feedId);
 
-            var actualServiceId = feed.GetApplicableServiceId(DateTime.Parse(date));
+            var actualServiceId = feed.GetApplicableServiceIds(DateTime.Parse(date));
 
-            Assert.Equal(serviceId, actualServiceId);
+            Assert.Equal(serviceId, actualServiceId.Single());
         }
     }
 }

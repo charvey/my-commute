@@ -14,7 +14,7 @@ namespace Core.Gtfs
 
     public static class GtfsFeedExtensions
     {
-        public static string GetApplicableServiceId(this GtfsFeed feed, DateTime now)
+        public static IEnumerable<string> GetApplicableServiceIds(this GtfsFeed feed, DateTime now)
         {
             return feed.Calendars
                 .Where(c => c.StartDate <= now && now <= c.EndDate)
@@ -22,7 +22,7 @@ namespace Core.Gtfs
                 .Select(c => c.ServiceId)
                 .Except(feed.CalendarDates.Where(c => c.Date == now.Date && c.ExceptionType == ExceptionType.Remove).Select(c => c.ServiceId))
                 .Concat(feed.CalendarDates.Where(c => c.Date == now.Date && c.ExceptionType == ExceptionType.Add).Select(c => c.ServiceId))
-                .Distinct().Single();
+                .Distinct();
         }
 
         private static bool CalendarApplies(DayOfWeek dayOfWeek, Calendar calendar)

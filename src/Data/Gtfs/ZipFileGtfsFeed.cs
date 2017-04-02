@@ -28,6 +28,8 @@ namespace Data.Gtfs
             using (var reader = new StreamReader(stream))
             using (var csvReader = new CsvReader(reader))
             {
+                csvReader.Configuration.TrimFields = true;
+                csvReader.Configuration.TrimHeaders = true;
                 csvReader.Configuration.RegisterClassMap(map);
                 return csvReader.GetRecords<T>().ToList();
             }

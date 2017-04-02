@@ -8,26 +8,28 @@ namespace Tests
 {
     public class CommuteServiceTests
     {
-        [Fact]
-        public void TestLeave()
+        [Theory]
+        [InlineData("March 27, 2017 5:00 AM", "March 27, 2017 5:22 AM")]
+        [InlineData("March 27, 2017 8:45 PM", "March 27, 2017 8:57 PM")]
+        public void TestLeave(string now, string leave)
         {
-            var feed = Feeds.Get("google_bus");
-            var now = DateTime.Parse("March 27, 2017 5:00 AM");
+            var feed = Feeds.Get("google_bus", "google_rail");
 
-            var options = new CommuteService().Get(feed, now);
+            var options = new CommuteService().Get(feed, DateTime.Parse(now));
 
-            Assert.Equal(DateTime.Parse("March 27, 2017 5:22 AM"), options.First().Leave);
+            Assert.Equal(DateTime.Parse(leave), options.First().Leave);
         }
 
-        [Fact]
-        public void TestArrive()
+        [Theory]
+        [InlineData("March 27, 2017 5:00 AM", "March 27, 2017 6:09 AM")]
+        [InlineData("March 27, 2017 8:45 PM", "March 27, 2017 9:58 PM")]
+        public void TestArrive(string now, string arrive)
         {
-            var feed = Feeds.Get("google_bus");
-            var now = DateTime.Parse("March 27, 2017 5:00 AM");
+            var feed = Feeds.Get("google_bus", "google_rail");
 
-            var options = new CommuteService().Get(feed, now);
+            var options = new CommuteService().Get(feed, DateTime.Parse(now));
 
-            Assert.Equal(DateTime.Parse("March 27, 2017 6:14 AM"), options.First().Arrive);
+            Assert.Equal(DateTime.Parse(arrive), options.First().Arrive);
         }
     }
 }
