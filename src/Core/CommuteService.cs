@@ -22,7 +22,13 @@ namespace Core
     {
 		public IEnumerable<Foo> Get(GtfsFeed feed, DateTime now)
 		{
-			return ToWork(feed, now).Select(x => new Foo
+			IEnumerable<StopTime[]> result;
+			if (now.TimeOfDay <= TimeSpan.Parse("12:30"))
+				result = ToWork(feed, now);
+			else
+				result = ToHome(feed, now);
+
+			return result.Select(x => new Foo
 			{
 				Segments = new[]
 				{
@@ -37,7 +43,7 @@ namespace Core
 		{
 			var serviceIds = new HashSet<string>(feed.GetApplicableServiceIds(now));
 
-			var startingLegs = GetDepartureTimes(feed, serviceIds, "30913", "30596", TimeSpan.Zero, TimeSpan.FromHours(24))
+			var startingLegs = GetDepartureTimes(feed, serviceIds, "30913", "30596", TimeSpan.Zero, TimeSpan.FromHours(14))
 				.OrderBy(z => z.Item1.DepartureTime).ToArray();
 
 			foreach (var startingLeg in startingLegs)
