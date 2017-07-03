@@ -20,105 +20,96 @@ namespace Core
 
     public class CommuteService
     {
-        public IEnumerable<Foo> Get(GtfsFeed feed, DateTime now)
-        {
-            var stops = new[]
-            {
-                "30913", // Main & Levering
-                "30596", //"31032", // Wissahickon
-                "20568", // Near Overbrook
-                "90522", // Overbrook Station
-                "90513" // Radnor Station
-            };
+		public IEnumerable<Foo> Get(GtfsFeed feed, DateTime now)
+		{
+			return ToWork(feed, now).Select(x => new Foo
+			{
+				Segments = new[]
+				{
+					new Bar{Leave=now.Date.Add(x[0].DepartureTime),Arrive=now.Date.Add(x[1].ArrivalTime)},
+					new Bar{Leave=now.Date.Add(x[2].DepartureTime),Arrive=now.Date.Add(x[3].ArrivalTime)},
+					new Bar{Leave=now.Date.Add(x[4].DepartureTime),Arrive=now.Date.Add(x[5].ArrivalTime)},
+				}
+			}).Where(x => x.Leave >= now);
+		}
 
-            return Get(feed, now, stops[0], stops[1])
-                .Select(o => new Foo
-                {
-                    Segments = new[] { o }
-                    .Concat(Get(feed, o.Arrive, stops[1], stops.Skip(1).ToArray()))
-                    .ToArray()
-                });
-        }
+		public static IEnumerable<StopTime[]> ToWork(GtfsFeed feed, DateTime now)
+		{
+			var serviceIds = new HashSet<string>(feed.GetApplicableServiceIds(now));
 
-        private Dictionary<GtfsFeed, Dictionary<string, Dictionary<string, StopTime[]>>> stopTimes = new Dictionary<GtfsFeed, Dictionary<string, Dictionary<string, StopTime[]>>>();
+			var startingLegs = GetDepartureTimes(feed, serviceIds, "30913", "30596", TimeSpan.Zero, TimeSpan.FromHours(24))
+				.OrderBy(z => z.Item1.DepartureTime).ToArray();
 
-        private Bar[] Get(GtfsFeed feed, DateTime now, string current, string[] remaining)
-        {
-            if (remaining.Length == 0)
-            {
-                return new Bar[0];
-            }
+			foreach (var startingLeg in startingLegs)
+			{
+				var nextLeg = GetDepartureTimes(feed, serviceIds, "30596", "20568", startingLeg.Item2.ArrivalTime, TimeSpan.FromHours(24))
+					.OrderBy(x => x.Item2.ArrivalTime).First();
+				var finalLeg = GetDepartureTimes(feed, serviceIds, "90522", "90513", nextLeg.Item2.ArrivalTime + TimeSpan.FromMinutes(2), TimeSpan.FromHours(24))
+					.OrderBy(x => x.Item2.ArrivalTime).First();
 
-            var next = Get(feed, now, current, remaining[0]).First();
-            return new Bar[] { next }
-            .Concat(Get(feed, next.Arrive, remaining[0], remaining.Skip(1).ToArray()))
-            .ToArray();
-        }
+				yield return new StopTime[]
+				{
+					startingLeg.Item1,
+					startingLeg.Item2,
+					nextLeg.Item1,
+					nextLeg.Item2,
+					finalLeg.Item1,
+					finalLeg.Item2
+				};
+			}
+		}
 
-        private IEnumerable<Bar> Get(GtfsFeed feed, DateTime now, string from, string to)
-        {
-            if (!stopTimes.ContainsKey(feed))
-                stopTimes[feed] = feed.StopTimes
-                    .GroupBy(st => st.TripId)
-                    .ToDictionary(
-                        tg => tg.Key,
-                        tg => tg
-                            .GroupBy(st => st.StopId)
-                            .ToDictionary(
-                                stg => stg.Key,
-                                stg => stg
-                                    .AsEnumerable()
-                                    .OrderBy(st => st.StopSequence)
-                                    .ToArray()
-                            )
-                        );
+		public static IEnumerable<StopTime[]> ToHome(GtfsFeed feed, DateTime now)
+		{
+			var serviceIds = new HashSet<string>(feed.GetApplicableServiceIds(now));
 
-            var serviceIds = new HashSet<string>(feed.GetApplicableServiceIds(now));
-            return feed.Trips
-                .Where(t => serviceIds.Contains(t.ServiceId))
-                .Where(t =>
-                {
-                    return stopTimes[feed][t.TripId].ContainsKey(from)
-                        && stopTimes[feed][t.TripId].ContainsKey(to);
-                })
-                .Select(t =>
-                {
-                    var tripStopTimes = stopTimes[feed][t.TripId];
+			var startingLegs = new[] { "14:59", "15:14", "15:29", "15:44", "15:59", "16:14", "16:29", "16:44", "16:59", "17:14", "17:29", "17:59", "18:09", "18:24", "18:39" }
+				.Select(TimeSpan.Parse)
+				.Select(t => Tuple.Create(new StopTime { DepartureTime = t }, new StopTime { ArrivalTime = t.Add(TimeSpan.FromMinutes(10)) }))
+				.ToList();
 
-                    var fromStop = tripStopTimes[from]
-                        .SkipWhile(st => now.Date + st.DepartureTime < now)
-                        .FirstOrDefault();
+			foreach (var startingLeg in startingLegs)
+			{
+				var nextLeg = GetDepartureTimes(feed, serviceIds, "1930", "30520", startingLeg.Item2.ArrivalTime, TimeSpan.FromHours(24))
+					.OrderBy(x => x.Item2.ArrivalTime).First();
+				var finalLeg = GetDepartureTimes(feed, serviceIds, "90226", "90221", nextLeg.Item2.ArrivalTime + TimeSpan.FromMinutes(2), TimeSpan.FromHours(24))
+					.OrderBy(x => x.Item2.ArrivalTime).First();
 
-                    if (fromStop == null) return null;
+				yield return new StopTime[]
+				{
+					startingLeg.Item1,
+					startingLeg.Item2,
+					nextLeg.Item1,
+					nextLeg.Item2,
+					finalLeg.Item1,
+					finalLeg.Item2
+				};
+			}
+		}
 
-                    var toStop = tripStopTimes[to]
-                        .SkipWhile(st => st.StopSequence < fromStop.StopSequence)
-                        .FirstOrDefault();
+		static Dictionary<GtfsFeed, Dictionary<string, List<StopTime>>> cachedStopTimes = new Dictionary<GtfsFeed, Dictionary<string, List<StopTime>>>();
 
-                    if (toStop == null) return null;
+		static IEnumerable<Tuple<StopTime, StopTime>> GetDepartureTimes(GtfsFeed feed, ISet<string> serviceIds,
+			string fromStopId, string toStopId,
+			TimeSpan startTime, TimeSpan endTime)
+		{
+			if (!cachedStopTimes.ContainsKey(feed))
+				cachedStopTimes[feed] = feed.StopTimes
+				.GroupBy(st => st.TripId)
+				.ToDictionary(x => x.Key, x => x.OrderBy(st => st.StopSequence).ToList());
+			var stopTimes = cachedStopTimes[feed];
 
-                    return new TripStopTimePair
-                    {
-                        Trip = t,
-                        From = fromStop,
-                        To = toStop
-                    };
-                }).Where(x => x != null)
-                .Select(t => new Bar
-                {
-                    Leave = now.Date + t.From.DepartureTime,
-                    Arrive = now.Date + t.To.ArrivalTime
-                }).OrderBy(b => b.Leave)
-                .Concat(new[]{
-                    new Bar{Leave=now,Arrive=now}//Walk
-                });
-        }
+			var trips = feed.Trips
+				.Where(t => serviceIds.Contains(t.ServiceId))
+				.Where(t => stopTimes[t.TripId].Any(st => st.StopId == fromStopId))
+				.Where(t => startTime <= stopTimes[t.TripId].Single(st => st.StopId == fromStopId).DepartureTime)
+				.Where(t => stopTimes[t.TripId].Single(st => st.StopId == fromStopId).DepartureTime <= endTime)
+				.Where(t => stopTimes[t.TripId].Any(st => st.StopId == toStopId))
+				.Where(t => stopTimes[t.TripId].Single(st => st.StopId == fromStopId).StopSequence < stopTimes[t.TripId].Single(st => st.StopId == toStopId).StopSequence);
 
-        private class TripStopTimePair
-        {
-            public Trip Trip;
-            public StopTime From;
-            public StopTime To;
-        }
+			return trips.Select(t => Tuple.Create(
+				stopTimes[t.TripId].Single(st => st.StopId == fromStopId),
+				 stopTimes[t.TripId].Single(st => st.StopId == toStopId)));
+		}
     }
 }
