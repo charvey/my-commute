@@ -6,23 +6,22 @@ namespace Tests.Gtfs
 {
     public class GtfsFeedTests
     {
-        [Theory]
-        [InlineData("sample-feed", 2)]
-        public void Calendars(string feedId, int count)
+        [Fact]
+        public void Calendars()
         {
-            var feed = Feeds.Get(feedId);
+			var feed = SampleFeeds.GoogleSample;
 
-            Assert.Equal(count, feed.Calendars.Count());
+            Assert.Equal(2, feed.Calendars.Count());
         }
 
         [Theory]
-        [InlineData("sample-feed", "CITY2", "NADAV", 402, 404)]
-        [InlineData("sample-feed", "AAMV3", "AMV", 840, 840)]
-        public void StopTimes(string feedId, string tripId, string stopId, int arrival, int departure)
+        [InlineData("CITY2", "NADAV", 402, 404)]
+        [InlineData("AAMV3", "AMV", 840, 840)]
+        public void StopTimes(string tripId, string stopId, int arrival, int departure)
         {
-            var feed = Feeds.Get(feedId);
+			var feed = SampleFeeds.GoogleSample;
 
-            var stop = feed.StopTimes.Single(st => st.TripId == tripId && st.StopId == stopId);
+			var stop = feed.StopTimes.Single(st => st.TripId == tripId && st.StopId == stopId);
 
             Assert.Equal(arrival, stop.ArrivalTime.TotalMinutes);
             Assert.Equal(departure, stop.DepartureTime.TotalMinutes);
