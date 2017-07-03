@@ -1,0 +1,91 @@
+﻿using Core;
+using Data.Feeds;
+using System;
+using System.Diagnostics;
+using System.IO;
+
+namespace Terminal
+{
+	class Program
+	{
+		static void Main(string[] args)
+		{
+			var feed = SeptaFeeds.Latest;
+			var anyGivenMonday = new DateTime(2017, 7, 3);
+
+			Console.WriteLine("To Work");
+			using (var file = new FileStream("table.html", FileMode.Create))
+			using (var writer = new StreamWriter(file))
+			{
+				writer.WriteLine("<html>");
+				writer.WriteLine("<head>");
+				writer.WriteLine("<link rel='stylesheet' href='https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css' integrity='sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u' crossorigin='anonymous'>");
+				writer.WriteLine("</head>");
+				writer.WriteLine("<body>");
+
+				writer.WriteLine("<table class='table table-hover table-condensed'>");
+				writer.WriteLine("<thead>");
+				writer.WriteLine("<tr>" +
+					"<th colspan='2'>To Wissahickon</th>" +
+					"<th colspan='2'>To Overbrook</th>" +
+					"<th colspan='2'>To Radnor</th>" +
+					"<th>Duration</th>" +
+				"</tr>");
+				writer.WriteLine("</thead>");
+				writer.WriteLine("<tbody>");
+				foreach (var st in CommuteService.ToWork(feed, anyGivenMonday))
+				{
+					writer.WriteLine("<tr>" +
+						"<td>" + st[0].DepartureTime + "</td><td>" + st[1].ArrivalTime + "</td>" +
+						"<td>" + st[2].DepartureTime + "</td><td>" + st[3].ArrivalTime + "</td>" +
+						"<td>" + st[4].DepartureTime + "</td><td>" + st[5].ArrivalTime + "</td>" +
+						"<td>" + (st[5].ArrivalTime - st[0].DepartureTime) + "</td>" +
+					"</tr>");
+
+					Console.WriteLine(
+						st[0].DepartureTime + " " + st[1].ArrivalTime + "\t" +
+						st[2].DepartureTime + " " + st[3].ArrivalTime + "\t" +
+						st[4].DepartureTime + " " + st[5].ArrivalTime + "\t" +
+						(st[5].ArrivalTime - st[0].DepartureTime)
+						);
+				}
+				writer.WriteLine("</tbody>");
+				writer.WriteLine("</table>");
+
+				Console.WriteLine("To Home");
+				writer.WriteLine("<table class='table table-hover table-condensed'>");
+				writer.WriteLine("<thead>");
+				writer.WriteLine("<tr>" +
+					"<th colspan='2'>To Radnor NHSL</th>" +
+					"<th colspan='2'>To Norristown</th>" +
+					"<th colspan='2'>To Manayunk</th>" +
+					"<th>Duration</th>" +
+				"</tr>");
+				writer.WriteLine("</thead>");
+				writer.WriteLine("<tbody>");
+				foreach (var st in CommuteService.ToHome(feed, anyGivenMonday))
+				{
+					writer.WriteLine("<tr>" +
+						"<td>" + st[0].DepartureTime + "</td><td>" + st[1].ArrivalTime + "</td>" +
+						"<td>" + st[2].DepartureTime + "</td><td>" + st[3].ArrivalTime + "</td>" +
+						"<td>" + st[4].DepartureTime + "</td><td>" + st[5].ArrivalTime + "</td>" +
+						"<td>" + (st[5].ArrivalTime - st[0].DepartureTime) + "</td>" +
+					"</tr>");
+
+					Console.WriteLine(
+						st[0].DepartureTime + " " + st[1].ArrivalTime + "\t" +
+						st[2].DepartureTime + " " + st[3].ArrivalTime + "\t" +
+						st[4].DepartureTime + " " + st[5].ArrivalTime + "\t" +
+						(st[5].ArrivalTime - st[0].DepartureTime)
+						);
+				}
+				writer.WriteLine("</tbody>");
+				writer.WriteLine("</table>");
+				writer.WriteLine("</body>");
+				writer.WriteLine("</html>");
+			}
+
+			if (Debugger.IsAttached) Console.Read();
+		}
+	}
+}
