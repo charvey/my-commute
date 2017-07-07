@@ -23,7 +23,7 @@ namespace Terminal
 				writer.WriteLine("</head>");
 				writer.WriteLine("<body>");
 
-				writer.WriteLine("<table class='table table-hover table-condensed'>");
+				writer.WriteLine("<table class='table table-striped table-condensed'>");
 				writer.WriteLine("<thead>");
 				writer.WriteLine("<tr>" +
 					"<th colspan='2'>To Wissahickon</th>" +
@@ -36,24 +36,24 @@ namespace Terminal
 				foreach (var st in CommuteService.ToWork(feed, anyGivenMonday))
 				{
 					writer.WriteLine("<tr>" +
-						"<td>" + st[0].DepartureTime + "</td><td>" + st[1].ArrivalTime + "</td>" +
-						"<td>" + st[2].DepartureTime + "</td><td>" + st[3].ArrivalTime + "</td>" +
-						"<td>" + st[4].DepartureTime + "</td><td>" + st[5].ArrivalTime + "</td>" +
-						"<td>" + (st[5].ArrivalTime - st[0].DepartureTime) + "</td>" +
+						"<td>" + st[0].DepartureTime.ToTimeOfDay() + "</td><td>" + st[1].ArrivalTime.ToTimeOfDay() + "</td>" +
+						"<td>" + st[2].DepartureTime.ToTimeOfDay() + "</td><td>" + st[3].ArrivalTime.ToTimeOfDay() + "</td>" +
+						"<td>" + st[4].DepartureTime.ToTimeOfDay() + "</td><td>" + st[5].ArrivalTime.ToTimeOfDay() + "</td>" +
+						"<td>" + (st[5].ArrivalTime - st[0].DepartureTime).ToLengthOfTime() + "</td>" +
 					"</tr>");
 
 					Console.WriteLine(
-						st[0].DepartureTime + " " + st[1].ArrivalTime + "\t" +
-						st[2].DepartureTime + " " + st[3].ArrivalTime + "\t" +
-						st[4].DepartureTime + " " + st[5].ArrivalTime + "\t" +
-						(st[5].ArrivalTime - st[0].DepartureTime)
+						st[0].DepartureTime.ToTimeOfDay() + " " + st[1].ArrivalTime.ToTimeOfDay() + "\t" +
+						st[2].DepartureTime.ToTimeOfDay() + " " + st[3].ArrivalTime.ToTimeOfDay() + "\t" +
+						st[4].DepartureTime.ToTimeOfDay() + " " + st[5].ArrivalTime.ToTimeOfDay() + "\t" +
+						(st[5].ArrivalTime - st[0].DepartureTime).ToLengthOfTime()
 						);
 				}
 				writer.WriteLine("</tbody>");
 				writer.WriteLine("</table>");
 
 				Console.WriteLine("To Home");
-				writer.WriteLine("<table class='table table-hover table-condensed'>");
+				writer.WriteLine("<table class='table table-striped table-condensed'>");
 				writer.WriteLine("<thead>");
 				writer.WriteLine("<tr>" +
 					"<th colspan='2'>To Radnor NHSL</th>" +
@@ -66,17 +66,17 @@ namespace Terminal
 				foreach (var st in CommuteService.ToHome(feed, anyGivenMonday))
 				{
 					writer.WriteLine("<tr>" +
-						"<td>" + st[0].DepartureTime + "</td><td>" + st[1].ArrivalTime + "</td>" +
-						"<td>" + st[2].DepartureTime + "</td><td>" + st[3].ArrivalTime + "</td>" +
-						"<td>" + st[4].DepartureTime + "</td><td>" + st[5].ArrivalTime + "</td>" +
-						"<td>" + (st[5].ArrivalTime - st[0].DepartureTime) + "</td>" +
+						"<td>" + st[0].DepartureTime.ToTimeOfDay() + "</td><td>" + st[1].ArrivalTime.ToTimeOfDay() + "</td>" +
+						"<td>" + st[2].DepartureTime.ToTimeOfDay() + "</td><td>" + st[3].ArrivalTime.ToTimeOfDay() + "</td>" +
+						"<td>" + st[4].DepartureTime.ToTimeOfDay() + "</td><td>" + st[5].ArrivalTime.ToTimeOfDay() + "</td>" +
+						"<td>" + (st[5].ArrivalTime - st[0].DepartureTime).ToLengthOfTime() + "</td>" +
 					"</tr>");
 
 					Console.WriteLine(
-						st[0].DepartureTime + " " + st[1].ArrivalTime + "\t" +
-						st[2].DepartureTime + " " + st[3].ArrivalTime + "\t" +
-						st[4].DepartureTime + " " + st[5].ArrivalTime + "\t" +
-						(st[5].ArrivalTime - st[0].DepartureTime)
+						st[0].DepartureTime.ToTimeOfDay() + " " + st[1].ArrivalTime.ToTimeOfDay() + "\t" +
+						st[2].DepartureTime.ToTimeOfDay() + " " + st[3].ArrivalTime.ToTimeOfDay() + "\t" +
+						st[4].DepartureTime.ToTimeOfDay() + " " + st[5].ArrivalTime.ToTimeOfDay() + "\t" +
+						(st[5].ArrivalTime - st[0].DepartureTime).ToLengthOfTime()
 						);
 				}
 				writer.WriteLine("</tbody>");
@@ -86,6 +86,21 @@ namespace Terminal
 			}
 
 			if (Debugger.IsAttached) Console.Read();
+		}
+	}
+
+	internal static class TimeSpanExtensions
+	{
+		internal static string ToTimeOfDay(this TimeSpan time)
+		{
+			return (DateTime.Today + time).ToString("t");
+		}
+
+		internal static string ToLengthOfTime(this TimeSpan time)
+		{
+			if (time.TotalHours >= 1)
+				return time.Hours + "h " + time.Minutes + "m";
+			return time.Minutes + "m";
 		}
 	}
 }
