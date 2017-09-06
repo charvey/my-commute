@@ -22,7 +22,7 @@ namespace Data.Feeds
 
 		private static void DownloadLatestFeedFiles()
 		{
-			const string latestUrl = "https://github.com/septadev/GTFS/releases/download/v20170701/gtfs_public.zip";
+			const string latestUrl = "https://github.com/septadev/GTFS/releases/download/v20170903/gtfs_public.zip";
 
 			if (!File.Exists("gtfs_public/google_rail.zip"))
 			{
