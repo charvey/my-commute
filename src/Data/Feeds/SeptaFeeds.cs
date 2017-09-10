@@ -1,7 +1,11 @@
 ﻿using Core.Gtfs;
 using Data.Gtfs;
+using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
+using System.Linq;
 using System.Net.Http;
 
 namespace Data.Feeds
@@ -22,21 +26,16 @@ namespace Data.Feeds
 
 		private static void DownloadLatestFeedFiles()
 		{
-			const string latestUrl = "https://github.com/septadev/GTFS/releases/download/v20170903/gtfs_public.zip";
+			httpClient.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36");
+			var json = httpClient.GetStringAsync("https://api.github.com/repos/septadev/GTFS/releases/latest").Result;
+			var release = JsonConvert.DeserializeObject<Release>(json);
+			var asset = release.assets.Single();
 
-			if (!File.Exists("gtfs_public/google_rail.zip"))
+			if (!File.Exists(asset.name) || DateTime.Parse(asset.updated_at) > new FileInfo(asset.name).LastWriteTime)
 			{
-				if (!File.Exists("gtfs_public.zip"))
-					Download(latestUrl, "gtfs_public.zip");
-
-				Extract("gtfs_public.zip");
-			}
-
-			if (!File.Exists("gtfs_public/google_bus.zip"))
-			{
-				if (!File.Exists("gtfs_public.zip"))
-					Download(latestUrl, "gtfs_public.zip");
-
+				File.Delete(asset.name);
+				Directory.Delete(Path.GetFileNameWithoutExtension(asset.name), true);
+				Download(asset.browser_download_url, asset.name);
 				Extract("gtfs_public.zip");
 			}
 		}
@@ -59,5 +58,17 @@ namespace Data.Feeds
 				httpClient.GetStreamAsync(address).Result.CopyTo(fileStream);
 			}
 		}
+	}
+
+	public class Asset
+	{
+		public string name;
+		public string updated_at { get; set; }
+		public string browser_download_url { get; set; }
+	}
+
+	public class Release
+	{
+		public List<Asset> assets { get; set; }
 	}
 }
