@@ -9,12 +9,12 @@ namespace Tests
     public class CommuteServiceTests
     {
         [Theory]
-		[InlineData("July 10, 2017 05:00 AM", "July 10, 2017 05:22 AM", "July 10, 2017 06:09 AM")]
-		[InlineData("July 10, 2017 07:55 AM", "July 10, 2017 08:02 AM", "July 10, 2017 08:44 AM")]
-		[InlineData("July 10, 2017 12:00 PM", "July 10, 2017 12:17 PM", "July 10, 2017 01:17 PM")]
-		[InlineData("July 10, 2017 01:00 PM", "July 10, 2017 02:59 PM", "July 10, 2017 04:22 PM")]
-		[InlineData("July 10, 2017 04:30 PM", "July 10, 2017 04:44 PM", "July 10, 2017 05:32 PM")]
-		[InlineData("July 10, 2017 06:30 PM", "July 10, 2017 06:39 PM", "July 10, 2017 07:41 PM")]
+		[InlineData("January 22, 2018 05:00 AM", "January 22, 2018 05:22 AM", "January 22, 2018 06:09 AM")]
+		[InlineData("January 22, 2018 07:55 AM", "January 22, 2018 08:02 AM", "January 22, 2018 09:09 AM")]
+		[InlineData("January 22, 2018 12:00 PM", "January 22, 2018 12:17 PM", "January 22, 2018 01:17 PM")]
+		[InlineData("January 22, 2018 01:00 PM", "January 22, 2018 02:59 PM", "January 22, 2018 04:22 PM")]
+		[InlineData("January 22, 2018 04:30 PM", "January 22, 2018 04:44 PM", "January 22, 2018 05:32 PM")]
+		[InlineData("January 22, 2018 06:30 PM", "January 22, 2018 06:39 PM", "January 22, 2018 07:41 PM")]
 		public void TypicalScenarios(string now, string leave, string arrive)
         {
 			var feed = SeptaFeeds.Latest;
