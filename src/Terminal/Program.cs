@@ -11,7 +11,7 @@ namespace Terminal
 		static void Main(string[] args)
 		{
 			var feed = SeptaFeeds.Latest;
-			var anyGivenMonday = new DateTime(2017, 9, 11);
+			var anyGivenMonday = new DateTime(2018, 1, 22);
 
 			Console.WriteLine("To Work");
 			using (var file = new FileStream("table.html", FileMode.Create))
