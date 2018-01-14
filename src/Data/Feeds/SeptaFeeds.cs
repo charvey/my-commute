@@ -34,7 +34,8 @@ namespace Data.Feeds
 			if (!File.Exists(asset.name) || DateTime.Parse(asset.updated_at) > new FileInfo(asset.name).LastWriteTime)
 			{
 				File.Delete(asset.name);
-				Directory.Delete(Path.GetFileNameWithoutExtension(asset.name), true);
+				if (Directory.Exists(Path.GetFileNameWithoutExtension(asset.name)))
+					Directory.Delete(Path.GetFileNameWithoutExtension(asset.name), true);
 				Download(asset.browser_download_url, asset.name);
 				Extract("gtfs_public.zip");
 			}
