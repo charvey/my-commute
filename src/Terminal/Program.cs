@@ -11,7 +11,7 @@ namespace Terminal
 		static void Main(string[] args)
 		{
 			var feed = SeptaFeeds.Latest;
-			var anyGivenMonday = new DateTime(2018, 1, 22);
+			var nextWeekday = NextWeekday();
 
 			Console.WriteLine("To Work");
 			using (var file = new FileStream("table.html", FileMode.Create))
@@ -33,7 +33,7 @@ namespace Terminal
 				"</tr>");
 				writer.WriteLine("</thead>");
 				writer.WriteLine("<tbody>");
-				foreach (var st in CommuteService.ToWork(feed, anyGivenMonday))
+				foreach (var st in CommuteService.ToWork(feed, nextWeekday))
 				{
 					writer.WriteLine("<tr>" +
 						"<td>" + st[0].DepartureTime.ToTimeOfDay() + "</td><td>" + st[1].ArrivalTime.ToTimeOfDay() + "</td>" +
@@ -63,7 +63,7 @@ namespace Terminal
 				"</tr>");
 				writer.WriteLine("</thead>");
 				writer.WriteLine("<tbody>");
-				foreach (var st in CommuteService.ToHome(feed, anyGivenMonday))
+				foreach (var st in CommuteService.ToHome(feed, nextWeekday))
 				{
 					writer.WriteLine("<tr>" +
 						"<td>" + st[0].DepartureTime.ToTimeOfDay() + "</td><td>" + st[1].ArrivalTime.ToTimeOfDay() + "</td>" +
@@ -86,6 +86,14 @@ namespace Terminal
 			}
 
 			if (Debugger.IsAttached) Console.Read();
+		}
+
+		private static DateTime NextWeekday()
+		{
+			var nextWeekday = DateTime.Today;
+			while (nextWeekday.DayOfWeek == DayOfWeek.Saturday || nextWeekday.DayOfWeek == DayOfWeek.Sunday)
+				nextWeekday = nextWeekday.AddDays(1);
+			return nextWeekday;
 		}
 	}
 
