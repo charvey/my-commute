@@ -1,4 +1,6 @@
-cd .\src\Terminal\bin\Debug\netcoreapp2.1\
+cd .\src
+dotnet build MyCommute.sln
+cd .\Terminal\bin\Debug\netcoreapp2.1\
 dotnet .\Terminal.dll
+Copy-Item .\table.html .\..\..\..\..\..\docs\index.html
 cd ..\..\..\..\..\
-Copy-Item .\src\Terminal\bin\Debug\netcoreapp2.1\table.html docs\index.html
