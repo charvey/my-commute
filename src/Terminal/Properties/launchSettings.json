@@ -2,7 +2,7 @@
   "profiles": {
     "Terminal": {
       "commandName": "Project",
-      "workingDirectory": "bin\\Debug\\netcoreapp2.0\\"
+      "workingDirectory": "bin\\Debug\\netcoreapp2.1\\"
     }
   }
 }
